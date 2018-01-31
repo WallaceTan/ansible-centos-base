@@ -1,0 +1,50 @@
+---
+security_groups:
+  - name: nectar-vpc-default
+    description: Nectar VPC Default Management over OTP-VPN
+    rules:
+      - { proto: tcp, from_port: 22, to_port: 22, group_id: sg-92460af5 }
+      - { proto: tcp, from_port: 3389, to_port: 3389, group_id: sg-92460af5 }
+      - { proto: icmp, from_port: 8, to_port: -1, cidr_ip: 0.0.0.0/0 }
+
+  - name: nectar-vpn
+    description: Nectar OpenVPN Server Group
+    rules:
+      - { proto: udp, from_port: 1194, to_port: 1194, cidr_ip: 0.0.0.0/0 }
+
+  - name: nectar-reverse-proxy
+    description: Nectar Reverse Proxy Security Group
+    rules:
+      - { proto: tcp, from_port: 80, to_port: 80, cidr_ip: 0.0.0.0/0 }
+      - { proto: tcp, from_port: 443, to_port: 443, cidr_ip: 0.0.0.0/0 }
+
+  - name: nectar-web
+    description: Nectar Web Security Group
+    rules:
+      - { proto: tcp, from_port: 80, to_port: 80, group_name: nectar-reverse-proxy }
+      - { proto: tcp, from_port: 443, to_port: 443, group_name: nectar-reverse-proxy }
+
+  - name: nectar-app
+    description: nectar app tier
+    rules:
+      - { proto: tcp, from_port: 80, to_port: 80, group_name: nectar-web }
+      - { proto: tcp, from_port: 443, to_port: 443, group_name: nectar-web }
+      - { proto: udp, from_port: 0, to_port: 65535, group_name: nectar-app }
+      - { proto: tcp, from_port: 0, to_port: 65535, group_name: nectar-app }
+
+  - name: nectar-db
+    description: Nectar DB Security Group
+    rules:
+      - { proto: tcp, from_port: 5432, to_port: 5432, group_name: nectar-app } # PostgreSQL
+      - { proto: tcp, from_port: 3306, to_port: 3306, group_name: nectar-app } # MySQL
+
+  - name: nectar-ad
+    description: Nectar AD Security Group
+    rules:
+      - { proto: udp, from_port: 0, to_port: 65535, group_name: nectar-app }
+      - { proto: tcp, from_port: 0, to_port: 65535, group_name: nectar-app }
+      - { proto: udp, from_port: 0, to_port: 65535, group_name: nectar-db }
+      - { proto: tcp, from_port: 0, to_port: 65535, group_name: nectar-db }
+      - { proto: udp, from_port: 0, to_port: 65535, group_name: nectar-ad }
+      - { proto: tcp, from_port: 0, to_port: 65535, group_name: nectar-ad }
+...

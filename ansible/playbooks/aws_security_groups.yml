@@ -1,117 +1,17 @@
 ---
-- name: Test self-referencing security group
+- name: Configure EC2 Security Groups
   hosts: localhost
   vars_files:
     - ../vars/ec2_vars.yml
+    - ../vars/nectar_security_groups.yml
   tasks:
-    - name: Nectar VPC Default Management over OTP-VPN
+    - name: Configure EC2 Security Groups
       ec2_group:
-        name: nectar-vpc-default
-        description: Nectar VPC Default Management over OTP-VPN
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
         region: "{{ ec2_region }}"
         vpc_id: "{{ ec2_vpc_id }}"
-        rules:
-          - { proto: tcp, from_port: 22, to_port: 22, group_id: sg-92460af5 }
-          - { proto: tcp, from_port: 3389, to_port: 3389, group_id: sg-92460af5 }
-          - { proto: icmp, from_port: 8, to_port: -1, cidr_ip: 0.0.0.0/0 }
-        tags: { Name: nectar-vpc-default, Project: "{{ ec2_tag_project }}", Owner: "{{ ec2_tag_owner }}" }
+        rules: "{{ item.rules }}"
+        tags: { Name: "{{ item.name }}", Project: "{{ ec2_tag_project }}", Owner: "{{ ec2_tag_owner }}" }
         state: present
-      register: ec2_group_results
-    - name: Results - Nectar OpenVPN Security Group
-      debug: var=ec2_group_results
-
-    - name: Nectar OpenVPN Server Group
-      ec2_group:
-        name: nectar-vpn
-        description: Nectar OpenVPN Server Group
-        region: "{{ ec2_region }}"
-        vpc_id: "{{ ec2_vpc_id }}"
-        rules:
-          - { proto: udp, from_port: 1194, to_port: 1194, cidr_ip: 0.0.0.0/0 }
-        tags: { Name: nectar-vpn, Project: "{{ ec2_tag_project }}", Owner: "{{ ec2_tag_owner }}" }
-        state: present
-      register: ec2_group_results
-    - name: Results - Nectar OpenVPN Server Group
-      debug: var=ec2_group_results
-
-    - name: Nectar Reverse Proxy Security Group
-      ec2_group:
-        name: nectar-reverse-proxy
-        description: nectar app tier
-        region: "{{ ec2_region }}"
-        vpc_id: "{{ ec2_vpc_id }}"
-        rules:
-          - { proto: tcp, from_port: 80, to_port: 80, cidr_ip: 0.0.0.0/0 }
-          - { proto: tcp, from_port: 443, to_port: 443, cidr_ip: 0.0.0.0/0 }
-        tags: { Name: nectar-reverse-proxy, Project: "{{ ec2_tag_project }}", Owner: "{{ ec2_tag_owner }}" }
-        state: present
-      register: ec2_group_results
-    - name: Results - Nectar Reverse Proxy Security Group
-      debug: var=ec2_group_results
-
-    - name: Nectar Web Security Group
-      ec2_group:
-        name: nectar-web
-        description: nectar app tier
-        region: "{{ ec2_region }}"
-        vpc_id: "{{ ec2_vpc_id }}"
-        rules:
-          - { proto: tcp, from_port: 80, to_port: 80, group_name: nectar-reverse-proxy }
-          - { proto: tcp, from_port: 443, to_port: 443, group_name: nectar-reverse-proxy }
-        tags: { Name: nectar-web, Project: "{{ ec2_tag_project }}", Owner: "{{ ec2_tag_owner }}" }
-        state: present
-      register: ec2_group_results
-    - name: Results - Nectar Web Security Group
-      debug: var=ec2_group_results
-
-    - name: Nectar App Security Group
-      ec2_group:
-        name: nectar-app
-        description: nectar app tier
-        region: "{{ ec2_region }}"
-        vpc_id: "{{ ec2_vpc_id }}"
-        rules:
-          - { proto: tcp, from_port: 80, to_port: 80, group_name: nectar-web }
-          - { proto: tcp, from_port: 443, to_port: 443, group_name: nectar-web }
-          - { proto: udp, from_port: 0, to_port: 65535, group_name: nectar-app }
-          - { proto: tcp, from_port: 0, to_port: 65535, group_name: nectar-app }
-        tags: { Name: nectar-app, Project: "{{ ec2_tag_project }}", Owner: "{{ ec2_tag_owner }}" }
-        state: present
-      register: ec2_group_results
-    - name: Results - Nectar App Security Group
-      debug: var=ec2_group_results
-
-    - name: Nectar DB Security Group
-      ec2_group:
-        name: nectar-db
-        description: Nectar DB Security Group
-        region: "{{ ec2_region }}"
-        vpc_id: "{{ ec2_vpc_id }}"
-        rules:
-          - { proto: tcp, from_port: 5432, to_port: 5432, group_name: nectar-app } # PostgreSQL
-          - { proto: tcp, from_port: 3306, to_port: 3306, group_name: nectar-app } # MySQL
-        tags: { Name: nectar-db, Project: "{{ ec2_tag_project }}", Owner: "{{ ec2_tag_owner }}" }
-        state: present
-      register: ec2_group_results
-    - name: Results - Nectar DB Security Group
-      debug: var=ec2_group_results
-
-#aws ec2 authorize-security-group-ingress --group-id sg-123abc12 --ip-permissions '[{"IpProtocol": "tcp", "FromPort": 3389, "ToPort": 3389, "IpRanges": [{"CidrIp": "203.0.113.0/24", "Description": "RDP access from NY office"}]}]'
-    - name: Nectar AD Security Group
-      ec2_group:
-        name: nectar-ad
-        description: Nectar AD Security Group
-        region: "{{ ec2_region }}"
-        vpc_id: "{{ ec2_vpc_id }}"
-        rules:
-          - { proto: udp, from_port: 0, to_port: 65535, group_name: nectar-app }
-          - { proto: tcp, from_port: 0, to_port: 65535, group_name: nectar-app }
-          - { proto: udp, from_port: 0, to_port: 65535, group_name: nectar-db }
-          - { proto: tcp, from_port: 0, to_port: 65535, group_name: nectar-db }
-          - { proto: udp, from_port: 0, to_port: 65535, group_name: nectar-ad }
-          - { proto: tcp, from_port: 0, to_port: 65535, group_name: nectar-ad }
-        tags: { Name: nectar-ad, Project: "{{ ec2_tag_project }}", Owner: "{{ ec2_tag_owner }}" }
-        state: present
-      register: ec2_group_results
-    - name: Results - Nectar AD Security Group
-      debug: var=ec2_group_results
+      with_items: "{{ security_groups }}"
