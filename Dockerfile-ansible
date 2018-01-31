@@ -1,5 +1,4 @@
 FROM centos:latest
-MAINTAINER Wallace Tan <wallacetan@gmail.com>
 
 RUN yum clean all && \
     yum -y install epel-release && \
