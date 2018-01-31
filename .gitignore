@@ -1,7 +1,12 @@
+.aws/credentials
+.aws/.boto3
+.ssh/.bash_history
 id_rsa
 id_rsa.pub
 *.pem
 *.pub
-credentials
-.bash_history
-.boto3
+*.retry
+*.original
+
+.ssh/
+ansible/supervisord.pid
