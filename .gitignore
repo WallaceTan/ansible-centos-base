@@ -7,6 +7,3 @@ id_rsa.pub
 *.pub
 *.retry
 *.original
-
-.ssh/
-ansible/supervisord.pid
