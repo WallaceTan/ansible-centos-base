@@ -1,6 +1,6 @@
 .aws/credentials
 .aws/.boto3
-.ssh/.bash_history
+.bash/.bash_history
 id_rsa
 id_rsa.pub
 *.pem
