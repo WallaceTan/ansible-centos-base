@@ -1,0 +1,7 @@
+id_rsa
+id_rsa.pub
+*.pem
+*.pub
+credentials
+.bash_history
+.boto3

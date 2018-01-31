@@ -1,0 +1,5 @@
+[docker-hosts]
+web
+app1
+app2
+db

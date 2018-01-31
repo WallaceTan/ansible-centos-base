@@ -1,0 +1,52 @@
+version: '2'
+services:
+# ansible control-node
+  control:
+    image: ansible-centos:latest
+    container_name: ansible-control
+    hostname: control
+    tty: true
+    volumes:
+      - ./.aws:/root/.aws
+      - ./.aws/credentials:/root/.aws/.boto3
+      - ./.ssh/id_rsa:/root/.ssh/id_rsa
+      - ./.ssh/keys:/root/.ssh/keys
+      - ./.ssh/config:/root/.ssh/config
+      - ./.bash/.bashrc:/root/.bashrc
+      - ./.bash/.bash_logout:/root/.bash_logout
+      - ./.bash/.bash_profile:/root/.bash_profile
+      - ./.bash/.vim:/root/.vim
+      - ./ansible:/tmp/ansible
+    working_dir: /tmp/ansible
+    links:
+      - web
+      - app1
+      - app2
+      - db
+# tail is running in the foreground to keep container running
+    command: ["tail", "-f", "/dev/null"]
+# managed-hosts
+  web:
+    image: managed-host-centos:latest
+    container_name: web
+    hostname: web
+    volumes:
+      - ./.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys
+  app1:
+    image: managed-host-centos:latest
+    container_name: app1
+    hostname: app1
+    volumes:
+      - ./.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys
+  app2:
+    image: managed-host-centos:latest
+    container_name: app2
+    hostname: app2
+    volumes:
+      - ./.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys
+  db:
+    image: managed-host-centos:latest
+    container_name: db
+    hostname: db
+    volumes:
+      - ./.ssh/id_rsa.pub:/home/ansible/.ssh/authorized_keys
